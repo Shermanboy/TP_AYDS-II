@@ -8,7 +8,7 @@ public class EstadisticasDTO {
     private VentaDTO ventaMenor;
     private String productoMasVendido;
 
-    // Genera los getters y setters (puedes usar el atajo de VS Code o escribirlos)
+    
     public Double getTotalFacturado() { return totalFacturado; }
     public void setTotalFacturado(Double totalFacturado) { this.totalFacturado = totalFacturado; }
     public Integer getCantidadVentas() { return cantidadVentas; }

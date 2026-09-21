@@ -17,7 +17,7 @@ public class VentasController {
 
     private final VentasService ventasService;
 
-    // Inyección de dependencias
+    
     public VentasController(VentasService ventasService) {
         this.ventasService = ventasService;
     }

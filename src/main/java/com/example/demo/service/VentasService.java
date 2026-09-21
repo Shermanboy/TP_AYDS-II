@@ -21,11 +21,11 @@ public class VentasService {
             double monto = v.getCantidad() * v.getPrecioUnitario();
             totalFacturado += monto;
 
-            // Lógica para venta mayor y menor
+            
             if (monto > (ventaMayor.getCantidad() * ventaMayor.getPrecioUnitario())) ventaMayor = v;
             if (monto < (ventaMenor.getCantidad() * ventaMenor.getPrecioUnitario())) ventaMenor = v;
 
-            // Acumulador para producto más vendido
+         
             cantidadesPorProducto.put(v.getProducto(), 
                 cantidadesPorProducto.getOrDefault(v.getProducto(), 0) + v.getCantidad());
         }
@@ -53,7 +53,7 @@ public class VentasService {
             dto.setCantidad(v.getCantidad());
             dto.setPrecioUnitario(v.getPrecioUnitario());
 
-            // Calcula el monto de esa venta y le resta el porcentaje
+            // aca aplicamos el descuento
             double montoOriginal = v.getCantidad() * v.getPrecioUnitario();
             double montoDescuento = montoOriginal - (montoOriginal * (porcentaje / 100));
             dto.setMontoConDescuento(montoDescuento);
