@@ -8,7 +8,7 @@ public class Respuestaapi{
     private Double montoConvertido;
     private String fecha;
 
-    // Getters y Setters
+  
     public Double getMontoOriginal() { return montoOriginal; }
     public void setMontoOriginal(Double montoOriginal) { this.montoOriginal = montoOriginal; }
     public String getMonedaOrigen() { return monedaOrigen; }

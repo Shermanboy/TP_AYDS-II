@@ -7,7 +7,7 @@ public class FrankFuster {
     private String date;
     private Map<String, Double> rates;
 
-    // Getters y Setters
+   
     public Double getAmount() { return amount; }
     public void setAmount(Double amount) { this.amount = amount; }
     public String getBase() { return base; }

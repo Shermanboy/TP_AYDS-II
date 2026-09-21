@@ -2,24 +2,31 @@ package com.example.demo.service;
 
 import com.example.demo.dto.Respuestaapi;
 import com.example.demo.dto.FrankFuster;
+import com.example.demo.dto.HistorialCotizacionDTO;
+import com.example.demo.model.HistorialConversion;
+import com.example.demo.repository.HistorialConversionRepo;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 public class apiservice {
 
     private final RestClient restClient;
+    private final HistorialConversionRepo historialRepository;
 
-    public apiservice() {
-        // Inicializamos el cliente apuntando a la URL base de Frankfurter
+    public apiservice(HistorialConversionRepo historialRepository) {
+        this.historialRepository = historialRepository; // Corregido: antes decía this.historialRepo
         this.restClient = RestClient.builder().baseUrl("https://api.frankfurter.app").build();
     }
 
-    public Respuestaapi convertirDivisa(Double monto, String origen, String destino) {
+    public Respuestaapi consultarYGuardar(Double monto, String origen, String destino) {
         try {
-            // Hacemos la llamada HTTP real a la API externa
             FrankFuster externalResponse = restClient.get()
                     .uri(uriBuilder -> uriBuilder
                             .path("/latest")
@@ -27,6 +34,8 @@ public class apiservice {
                             .queryParam("from", origen.toUpperCase())
                             .queryParam("to", destino.toUpperCase())
                             .build())
+                    .accept(org.springframework.http.MediaType.APPLICATION_JSON)
+                    .header("User-Agent", "Mozilla/5.0")
                     .retrieve()
                     .body(FrankFuster.class);
 
@@ -34,23 +43,48 @@ public class apiservice {
                 throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "No se encontraron tasas para la moneda destino");
             }
 
-            // Armamos nuestra propia respuesta
+            double montoConvertido = externalResponse.getRates().get(destino.toUpperCase());
+            double tasaBase = montoConvertido / monto;
+
+            // Guardamos en la base de datos usando la Entidad, no el Repo
+            HistorialConversion historial = new HistorialConversion(); 
+            historial.setMonedaOrigen(origen.toUpperCase());
+            historial.setMonedaDestino(destino.toUpperCase());
+            historial.setMonto(monto);
+            historial.setMontoConvertido(montoConvertido);
+            historial.setTasa(tasaBase);
+            historial.setFechaConsulta(LocalDateTime.now());
+            
+            // Usamos el Repo para guardar la Entidad
+            historialRepository.save(historial); 
+
+            // Armamos la respuesta para el cliente
             Respuestaapi response = new Respuestaapi();
             response.setMontoOriginal(monto);
             response.setMonedaOrigen(origen.toUpperCase());
             response.setMonedaDestino(destino.toUpperCase());
             response.setFecha(externalResponse.getDate());
-            
-            // Frankfurter devuelve el monto ya multiplicado en "rates" si le pasamos "amount"
-            double montoConvertido = externalResponse.getRates().get(destino.toUpperCase());
             response.setMontoConvertido(montoConvertido);
-            response.setTasaCambio(montoConvertido / monto); // Calculamos la tasa base
+            response.setTasaCambio(tasaBase);
 
             return response;
 
         } catch (Exception e) {
-            // Si Frankfurter explota (timeout, moneda inválida, etc), devolvemos 502 como pide el TP
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Error al comunicarse con la API externa: " + e.getMessage());
         }
+    }
+
+    public List<HistorialCotizacionDTO> obtenerHistorial(String origen, String destino) {
+        // Buscamos una lista de Entidades
+        List<HistorialConversion> registros = historialRepository.buscarHistorial(origen.toUpperCase(), destino.toUpperCase());
+        List<HistorialCotizacionDTO> respuesta = new ArrayList<>();
+        
+        for (HistorialConversion h : registros) {
+            HistorialCotizacionDTO dto = new HistorialCotizacionDTO();
+            dto.setFecha(h.getFechaConsulta());
+            dto.setTasaCambio(h.getTasa());
+            respuesta.add(dto);
+        }
+        return respuesta;
     }
 }

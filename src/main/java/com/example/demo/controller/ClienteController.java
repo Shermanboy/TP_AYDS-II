@@ -18,14 +18,14 @@ public class ClienteController {
         this.clienteService = clienteService;
     }
 
-    // Endpoint 1: Alta simple (Sin @Valid)
+   
     @PostMapping
     public ResponseEntity<ApiResponse<Cliente>> altaSimple(@RequestBody ClienteDTO clienteDTO) {
         Cliente creado = clienteService.guardarCliente(clienteDTO);
         return ResponseEntity.status(201).body(new ApiResponse<>(201, "Cliente creado", creado));
     }
 
-    // Endpoint 2: Alta con validación (Con @Valid y comprobación de email)
+    
     @PostMapping("/validado")
     public ResponseEntity<ApiResponse<Object>> altaValidada(@Valid @RequestBody ClienteDTO clienteDTO) {
         
