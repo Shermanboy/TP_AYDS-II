@@ -46,7 +46,7 @@ public class apiservice {
             double montoConvertido = externalResponse.getRates().get(destino.toUpperCase());
             double tasaBase = montoConvertido / monto;
 
-            // Guardamos en la base de datos usando la Entidad, no el Repo
+           
             HistorialConversion historial = new HistorialConversion(); 
             historial.setMonedaOrigen(origen.toUpperCase());
             historial.setMonedaDestino(destino.toUpperCase());
@@ -55,10 +55,10 @@ public class apiservice {
             historial.setTasa(tasaBase);
             historial.setFechaConsulta(LocalDateTime.now());
             
-            // Usamos el Repo para guardar la Entidad
+           
             historialRepository.save(historial); 
 
-            // Armamos la respuesta para el cliente
+           
             Respuestaapi response = new Respuestaapi();
             response.setMontoOriginal(monto);
             response.setMonedaOrigen(origen.toUpperCase());
@@ -75,7 +75,7 @@ public class apiservice {
     }
 
     public List<HistorialCotizacionDTO> obtenerHistorial(String origen, String destino) {
-        // Buscamos una lista de Entidades
+      
         List<HistorialConversion> registros = historialRepository.buscarHistorial(origen.toUpperCase(), destino.toUpperCase());
         List<HistorialCotizacionDTO> respuesta = new ArrayList<>();
         
